@@ -1,79 +1,35 @@
-import streamlit as st  # For creating the web app
-import pandas as pd  # For handling data
-import pickle  # For loading the trained model
-from sklearn.preprocessing import RobustScaler  # Fix: Import RobustScaler
+import streamlit as st
+import pandas as pd
+import pickle
 
-# Load the trained model from the pickle file
+# Load the trained model
 with open('rm_best_model.pkl', 'rb') as file:
     best_model = pickle.load(file)
 
-# Load the scaler (if used during training)
-scaler = RobustScaler()
-
-# Function to preprocess the data
-def preprocess_data(df):
-    # Get all numerical features
-    num_features = [feature for feature in df.columns if df[feature].dtype != 'O']
-    
-    # Identify discrete features (features with ≤ 25 unique values)
-    discrete_features = [feature for feature in num_features if len(df[feature].unique()) <= 25]
-    
-    # Get continuous features (numerical features that are not discrete)
-    continuous_features = [feature for feature in num_features if feature not in discrete_features]
-    
-    # Debugging: Show continuous features
-    st.write(f'Continuous Features: {continuous_features}')
-    
-    # Apply RobustScaler to continuous features
-    if len(continuous_features) > 0:
-        df[continuous_features] = scaler.fit_transform(df[continuous_features].copy())  # Fix: Use .copy()
-    else:
-        st.write("No continuous features found for scaling.")
-    
-    return df
-
-# Streamlit app code
+# Streamlit app
 st.title("Heart Attack Prediction")
 
-# User input form
+# User input
 age = st.slider("Age", 29, 77)
 sex = st.selectbox("Sex", [0, 1])  # 0 = Female, 1 = Male
 cp = st.selectbox("Chest Pain Type", [0, 1, 2, 3])
-trtbps = st.slider("Resting Blood Pressure (in mm Hg)", 94, 200)
-chol = st.slider("Serum Cholestoral (in mg/dl)", 126, 564)
-fbs = st.selectbox("Fasting Blood Sugar", [0, 1])  # 0 = < 120 mg/dl, 1 = >= 120 mg/dl
-restecg = st.selectbox("Resting Electrocardiographic Result", [0, 1, 2])
-thalachh = st.slider("Maximum Heart Rate Achieved", 71, 202)
-exng = st.selectbox("Exercise Induced Angina", [0, 1])  # 0 = No, 1 = Yes
-oldpeak = st.slider("ST Depression Induced by Exercise", 0.0, 6.2)
-slp = st.selectbox("Slope of the Peak Exercise ST Segment", [0, 1, 2])
-caa = st.selectbox("Number of Major Vessels Colored by Fluoroscopy", [0, 1, 2, 3, 4])
+trtbps = st.slider("Resting Blood Pressure (mm Hg)", 94, 200)
+chol = st.slider("Serum Cholesterol (mg/dl)", 126, 564)
+fbs = st.selectbox("Fasting Blood Sugar >= 120 mg/dl", [0, 1])
+restecg = st.selectbox("Resting ECG Results", [0, 1, 2])
+thalachh = st.slider("Max Heart Rate Achieved", 71, 202)
+exng = st.selectbox("Exercise Induced Angina", [0, 1])
+oldpeak = st.slider("ST Depression by Exercise", 0.0, 6.2)
+slp = st.selectbox("Slope of Peak Exercise ST Segment", [0, 1, 2])
+caa = st.selectbox("Major Vessels Colored by Fluoroscopy", [0, 1, 2, 3, 4])
 thall = st.selectbox("Thalassemia", [0, 1, 2, 3])
 
-# Create a DataFrame from user input
+# Convert input to DataFrame
 input_data = pd.DataFrame([[age, sex, cp, trtbps, chol, fbs, restecg, thalachh, exng, oldpeak, slp, caa, thall]],
                           columns=['age', 'sex', 'cp', 'trtbps', 'chol', 'fbs', 'restecg', 'thalachh', 'exng', 'oldpeak', 'slp', 'caa', 'thall'])
 
-# Display the input data for debugging
-st.write("Input Data for Prediction:")
-st.write(input_data)
-
-# Add a button that triggers the prediction
-if st.button('Predict Heart Attack Risk'):
-    try:
-        # Preprocess the data
-        input_data = preprocess_data(input_data)
-        
-        # Make predictions using the loaded model
-        prediction = best_model.predict(input_data)
-        
-        # Display the prediction
-        if prediction[0] == 1:
-            st.write("Prediction: The model predicts that you may have a heart attack.")
-        else:
-            st.write("Prediction: The model predicts that you are not likely to have a heart attack.")
-    
-    except Exception as e:
-        st.write(f"Error in Prediction: {e}")  # Fix: Display error messages if anything fails
-
-
+# Predict
+if st.button('Predict'):
+    prediction = best_model.predict(input_data)
+    result = "High Risk of Heart Attack" if prediction[0] == 1 else "Low Risk of Heart Attack"
+    st.write(f"Prediction: {result}")
