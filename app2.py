@@ -1,7 +1,19 @@
-import streamlit as st
-import pandas as pd
-import pickle
-from sklearn.preprocessing import RobustScaler
+import os
+import sys
+
+# Install scikit-learn if not installed
+try:
+    import sklearn
+except ImportError:
+    os.system(f"{sys.executable} -m pip install scikit-learn")
+    import sklearn  # Import again after installation
+
+import streamlit as st  # For creating the web app
+import pandas as pd  # For handling data
+import pickle  # For loading the trained model
+from sklearn.preprocessing import RobustScaler  # For scaling continuous features
+
+pip install scikit-learn
 
 # Load the trained model from the pickle file
 with open('rm_best_model.pkl', 'rb') as file:
