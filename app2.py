@@ -1,7 +1,6 @@
 
 
 import streamlit as st  # For creating the web app
-import sklearn
 import pandas as pd  # For handling data
 import pickle  # For loading the trained model
 from sklearn.preprocessing import RobustScaler  # For scaling continuous features
