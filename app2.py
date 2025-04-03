@@ -1,12 +1,4 @@
-import os
-import sys
 
-# Install scikit-learn if not installed
-try:
-    import sklearn
-except ImportError:
-    os.system(f"{sys.executable} -m pip install scikit-learn")
-    import sklearn  # Import again after installation
 
 import streamlit as st  # For creating the web app
 import sklearn
