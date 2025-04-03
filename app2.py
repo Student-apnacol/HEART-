@@ -13,7 +13,6 @@ import pandas as pd  # For handling data
 import pickle  # For loading the trained model
 from sklearn.preprocessing import RobustScaler  # For scaling continuous features
 
-pip install scikit-learn
 
 # Load the trained model from the pickle file
 with open('rm_best_model.pkl', 'rb') as file:
