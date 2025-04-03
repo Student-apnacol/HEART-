@@ -1,13 +1,14 @@
-
-
 import streamlit as st  # For creating the web app
 import pandas as pd  # For handling data
 import pickle  # For loading the trained model
-
+from sklearn.preprocessing import RobustScaler  # Fix: Import RobustScaler
 
 # Load the trained model from the pickle file
 with open('rm_best_model.pkl', 'rb') as file:
     best_model = pickle.load(file)
+
+# Load the scaler (if used during training)
+scaler = RobustScaler()
 
 # Function to preprocess the data
 def preprocess_data(df):
@@ -20,15 +21,14 @@ def preprocess_data(df):
     # Get continuous features (numerical features that are not discrete)
     continuous_features = [feature for feature in num_features if feature not in discrete_features]
     
-    # Print the list of continuous features to debug
-    print(f'Continuous Features: {continuous_features}')
+    # Debugging: Show continuous features
+    st.write(f'Continuous Features: {continuous_features}')
     
     # Apply RobustScaler to continuous features
-    scaler = RobustScaler()
     if len(continuous_features) > 0:
-        df[continuous_features] = scaler.fit_transform(df[continuous_features])
+        df[continuous_features] = scaler.fit_transform(df[continuous_features].copy())  # Fix: Use .copy()
     else:
-        print("No continuous features found for scaling.")
+        st.write("No continuous features found for scaling.")
     
     return df
 
@@ -60,15 +60,20 @@ st.write(input_data)
 
 # Add a button that triggers the prediction
 if st.button('Predict Heart Attack Risk'):
-    # Preprocess the data
-    input_data = preprocess_data(input_data)
+    try:
+        # Preprocess the data
+        input_data = preprocess_data(input_data)
+        
+        # Make predictions using the loaded model
+        prediction = best_model.predict(input_data)
+        
+        # Display the prediction
+        if prediction[0] == 1:
+            st.write("Prediction: The model predicts that you may have a heart attack.")
+        else:
+            st.write("Prediction: The model predicts that you are not likely to have a heart attack.")
     
-    # Make predictions using the loaded model
-    prediction = best_model.predict(input_data)
-    
-    # Display the prediction
-    if prediction[0] == 1:
-        st.write("Prediction: The model predicts that you may have a heart attack.")
-    else:
-        st.write("Prediction: The model predicts that you are not likely to have a heart attack.")
+    except Exception as e:
+        st.write(f"Error in Prediction: {e}")  # Fix: Display error messages if anything fails
+
 
